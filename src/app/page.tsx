@@ -1,9 +1,9 @@
-import Image from "next/image";
+import { Button } from "@/components/ui/button"
 
 export default function Home() {
   return (
-    <div className="text-2xl text-amber-500">
-      Hello Mi 
-    </div>
-  );
+    <main className="flex items-center justify-center min-h-screen">
+      <Button>Click me</Button>
+    </main>
+  )
 }
