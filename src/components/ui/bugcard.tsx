@@ -8,13 +8,11 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 
-const  BugCard = () => {
+const  BugCard = ()  => {
   return (
     <div  className="w-full">
-        
-
    <Card>
-  <CardHeader>
+   <CardHeader>
     <CardTitle>Bug Card1</CardTitle>
     <CardDescription>Bug Description</CardDescription>
     <CardAction>Votes</CardAction>
@@ -23,7 +21,7 @@ const  BugCard = () => {
     <p>Solution</p>
   </CardContent>
   <CardFooter>
-    <p>AUthor</p>
+    <p>Author</p>
   </CardFooter>
 </Card>
     </div>
