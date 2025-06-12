@@ -1,10 +1,14 @@
 import BugCard from "@/components/ui/bugcard";
 
 
-export default function Feed() {
+
+export default function Home() {
   return (
-    <div  >
-      <BugCard/>
+    <div  className="flex justify-center items-center ">
+      <div className="w-2/6  mt-6">
+          <BugCard />
+      </div>
+      
     </div>
   )
 
