@@ -1,11 +1,17 @@
-// Add this comment at the top of page.tsx
-/* eslint-disable @typescript-eslint/no-unused-vars */
 
+"use client"
 import { Button } from "@/components/ui/button"
 import Navbar from "@/components/ui/navbar"
 import CarouselCard from "@/components/ui/carouselCard"
+import { useEffect } from "react";
 
 export default function Home() {
+  useEffect(() => {
+  console.log({
+    apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
+    projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID
+  });
+}, []);
   return (
     <main  >
       <Navbar/>

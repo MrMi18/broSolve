@@ -1,6 +1,6 @@
 import { auth } from "@/lib/firebase";
 import { createUserWithEmailAndPassword, fetchSignInMethodsForEmail } from "firebase/auth";
-import { NextRequest,NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 
 export async function POST(request: Request) {
   try {
@@ -21,7 +21,7 @@ export async function POST(request: Request) {
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
     return NextResponse.json({ user: userCredential.user });
 
-  } catch (error) {
+  } catch  {
     return NextResponse.json(
       { error: 'Registration failed' },
       { status: 400 }
