@@ -2,6 +2,7 @@
 /lib
 /lib/firebase
 /a.js
+/Notes
 # dependencies
 /node_modules
 /.pnp
@@ -42,3 +43,4 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 .env.local
+notes.md

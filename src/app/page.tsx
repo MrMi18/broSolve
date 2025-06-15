@@ -1,8 +1,8 @@
 
 "use client"
 import { Button } from "@/components/ui/button"
-import Navbar from "@/components/ui/navbar"
-import CarouselCard from "@/components/ui/carouselCard"
+import Navbar from "@/components/shared/navbar"
+import CarouselCard from "@/components/features/carouselCard"
 import { useEffect } from "react";
 
 export default function Home() {
@@ -14,7 +14,7 @@ export default function Home() {
 }, []);
   return (
     <main  >
-      <Navbar/>
+      
       
       <div className="flex items-center justify-center min-h-screen ">
       <div className="flex items-center   flex-col gap-7">

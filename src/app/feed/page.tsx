@@ -1,4 +1,4 @@
-import BugCard from "@/components/ui/bugcard";
+import BugCard from "@/components/features/bugcard";
 
 
 
