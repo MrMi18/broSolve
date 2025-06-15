@@ -1,17 +1,14 @@
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
+import SubmitBugForm from "@/components/features/BugSubmitForm"
 
+ const Submit = () =>{
 
-export default function Home() {
   return (
-    <div className="flex justify-center items-center flex-col ">
-        <h1>Submit a doubt</h1>
-        <form  className="w-1/3 h-full">
-            <Input/>
-            <Textarea/>
-
-
-        </form>
-    </div>
+    <div className="flex justify-center items-center min-h-screen">
+          <div className="w-full max-w-md p-8 space-y-8 border rounded-lg">
+            <h1 className="text-2xl font-bold text-center">Submit A Bug</h1>
+            <SubmitBugForm/>
+          </div>
+        </div>
   )
 }
+export default Submit 
