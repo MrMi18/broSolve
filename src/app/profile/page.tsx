@@ -1,11 +1,13 @@
 
 "use client"
 import { useAuth } from "@/context/AuthContext"
-import { useContext } from "react"
-
+import { useContext, useEffect } from "react"
+import { useRouter } from "next/navigation";
 export default function Profile(){
     const {user,loading} = useAuth();
-    console.log(user)
+    const router = useRouter()
+    
+      
     if(loading) return <div>loading.....</div>
     
     return (

@@ -11,6 +11,7 @@ import { useAuth } from '@/context/AuthContext'
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import axios from 'axios'
+import { auth } from '@/lib/firebase'
 
 const formSchema = z.object({
   title: z.string().min(8, 'Title must be at least 8 characters'),
@@ -25,7 +26,7 @@ type FormValues = z.infer<typeof formSchema>
 
 export default function SubmitBugForm() {
   const router = useRouter()
-  const { user } = useAuth()
+  const { user ,loading} = useAuth()
   const [isLoading, setIsLoading] = useState(false)
 
   
@@ -38,9 +39,11 @@ export default function SubmitBugForm() {
     
     }
   })
+  
 
   const onSubmit = async (data: FormValues) => {
     try {
+      const userToken = await auth.currentUser?.getIdToken()
       setIsLoading(true)
       const body = {
         title:data.title,
@@ -49,12 +52,13 @@ export default function SubmitBugForm() {
       }
         const config = {
            headers: {
-              'Content-Type': 'application/json'
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${userToken}` 
            }
         }
-      const response = await axios.post('/api/bugs',body ,config)
+      const response = await axios.post('/api/bugs/new',body ,config)
       toast.success('Bug submitted!')
-      console.log(response);
+      form.reset()
       // router.push('/bugs')
     } catch (error :any) {
       console.error(error)
@@ -65,8 +69,9 @@ export default function SubmitBugForm() {
   }
 
   useEffect(() => {
-    if (!user) router.push('/login')
-  }, [user, router])
+    if (!user && !loading) router.push('/login')
+      else console.log(user)
+  }, [user,loading, router])
 
   return (
     <Form {...form}>

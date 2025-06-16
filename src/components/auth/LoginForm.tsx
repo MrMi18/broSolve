@@ -21,7 +21,7 @@ const formSchema = z.object({
 
 export function LoginForm() {
   const router = useRouter();
-  const user = useAuth();
+  const { user, loading } = useAuth(); 
   const [isLoading , setIsLoading] = useState(false);
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -63,10 +63,10 @@ export function LoginForm() {
     }
   }
   useEffect(() => {
-    if (user) {
-      router.push('/profile'); 
+    if (!loading && user) {
+      router.push('/profile');
     }
-  }, [user, router]);
+  }, [user, loading, router]);
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">

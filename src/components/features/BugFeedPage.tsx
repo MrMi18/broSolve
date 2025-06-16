@@ -6,8 +6,9 @@ import {
   CardDescription,
   CardContent,
   CardFooter,
-} from "./card";
-import { Button } from "./button";
+} from "../ui/card";
+import { Button } from "../ui/button";
+
 
 const BugFeedPage = () => {
   return (
