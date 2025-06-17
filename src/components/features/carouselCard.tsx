@@ -5,7 +5,8 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/components/ui/carousel"
-import BugCard from "./BugCard"
+import { BugCard } from '@/components/features/bugcard'
+
 const carouselCard = () => {
   return (
  <Carousel className="w-[100%] ">

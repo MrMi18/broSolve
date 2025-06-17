@@ -1,14 +1,15 @@
+
 "use client"
 
 import { useEffect, useState } from 'react'
-import { collection, query, orderBy, limit, getDocs, startAfter, DocumentData } from 'firebase/firestore'
+import { collection, query, orderBy, limit, getDocs, startAfter, DocumentData, onSnapshot } from 'firebase/firestore'
 import { db } from '@/lib/firebase'
 import { Button } from '@/components/ui/button'
 import { MessageCircle } from 'lucide-react'
-import BugSkeleton from '@/components/features/bugSkeleton'
 import { Card, CardContent } from '@/components/ui/card'
+import BugSkeleton from '@/components/features/BugSkeleton'
 import { SearchAndFilters } from '@/components/features/SearchAndFilters'
-import { BugCard } from '@/components/features/BugCard'
+import { BugCard } from '@/components/features/bugcard'
 
 interface Bug {
   id: string
@@ -34,6 +35,7 @@ export default function FeedPage() {
   const BUGS_PER_PAGE = 10
 
   const fetchBugs = async (isLoadMore = false) => {
+  
     try {
       if (isLoadMore) {
         setLoadingMore(true)
@@ -98,7 +100,7 @@ export default function FeedPage() {
   if (loading) {
     return <BugSkeleton/>
   }
-
+ 
   return (
     <div className="max-w-4xl mx-auto p-6">
       <div className="mb-8">

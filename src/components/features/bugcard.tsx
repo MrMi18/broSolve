@@ -2,6 +2,8 @@ import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { MessageCircle, ThumbsUp, Clock, User } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
+import { useRouter } from 'next/navigation'
+
 
 interface BugCardProps {
   bug: {
@@ -18,6 +20,8 @@ interface BugCardProps {
 }
 
 export function BugCard({ bug }: BugCardProps) {
+  
+  const router = useRouter();
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'open': return 'bg-red-100 text-red-800 hover:bg-red-200'
@@ -33,9 +37,9 @@ export function BugCard({ bug }: BugCardProps) {
     const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp)
     return formatDistanceToNow(date, { addSuffix: true })
   }
-
+console.log(bug)
   return (
-    <Card className="hover:shadow-md transition-shadow cursor-pointer">
+    <Card onClick={() => router.push(`/bugs/${bug.id}`)} className="hover:shadow-md transition-shadow cursor-pointer">
       <CardHeader>
         <div className="flex justify-between items-start">
           <CardTitle className="text-lg font-semibold line-clamp-2">
@@ -70,6 +74,8 @@ export function BugCard({ bug }: BugCardProps) {
             <div className="flex items-center space-x-1">
               <User className="w-4 h-4" />
               <span>{bug.createdBy}</span>
+              
+              
             </div>
             <div className="flex items-center space-x-1">
               <Clock className="w-4 h-4" />
