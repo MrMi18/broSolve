@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { MessageCircle, ThumbsUp, Clock, User } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
 import { useRouter } from 'next/navigation'
+import VoteButton from './VoteButton'
 
 
 interface BugCardProps {
@@ -84,9 +85,15 @@ console.log(bug)
           </div>
           
           <div className="flex items-center space-x-4">
-            <div className="flex items-center space-x-1">
-              <ThumbsUp className="w-4 h-4" />
-              <span>{bug.votes || 0}</span>
+            <div className="flex items-center space-x-1 " >
+              <VoteButton
+                targetId={bug.id}
+                targetType="bug"
+                parentId={bug.id}
+                initialVotes={bug.votes || 0}
+                onVoteUpdate={(vote) => vote + 1}
+
+              />
             </div>
             <div className="flex items-center space-x-1">
               <MessageCircle className="w-4 h-4" />

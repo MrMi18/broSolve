@@ -9,7 +9,7 @@ import { MessageCircle } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
 import BugSkeleton from '@/components/features/BugSkeleton'
 import { SearchAndFilters } from '@/components/features/SearchAndFilters'
-import { BugCard } from '@/components/features/bugcard'
+import { BugCard } from '@/components/features/BugCard'
 
 interface Bug {
   id: string
@@ -19,7 +19,7 @@ interface Bug {
   status: 'open' | 'answered' | 'solved' | 'closed'
   createdBy: string
   createdAt: any
-  votes?: number
+  votes: number
   answerCount?: number
 }
 

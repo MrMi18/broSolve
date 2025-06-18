@@ -5,16 +5,16 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/components/ui/carousel"
-import { BugCard } from '@/components/features/bugcard'
+
 
 const carouselCard = () => {
   return (
  <Carousel className="w-[100%] ">
   
   <CarouselContent>
-    <CarouselItem><BugCard/></CarouselItem>
-    <CarouselItem><BugCard/> </CarouselItem>
-    <CarouselItem><BugCard/></CarouselItem>
+    <CarouselItem></CarouselItem>
+    <CarouselItem> </CarouselItem>
+    <CarouselItem></CarouselItem>
   </CarouselContent>
   <CarouselPrevious className="text-white bg-black" />
   <CarouselNext className="text-white bg-black" />

@@ -37,6 +37,7 @@ export async function POST(request: Request) {
         : tags,
       status: 'open',
       createdBy: userId,
+      votes: 0,
       createdAt: new Date() // Admin SDK uses Date objects
     })
 
