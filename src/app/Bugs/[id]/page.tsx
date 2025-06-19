@@ -15,6 +15,7 @@ import { ArrowLeft, User, Clock, MessageCircle, ThumbsUp, Send, ThumbsDown } fro
 import { formatDistanceToNow } from 'date-fns'
 import { toast } from 'sonner'
 import VoteButton from '@/components/features/VoteButton'
+import AiSuggestionSection from '@/components/features/AiSuggestionSection'
 
 interface Bug {
   id: string
@@ -271,7 +272,8 @@ export default function BugDetailPage({ params  }: BugDetailPageProps) {
           </div>
         </CardContent>
       </Card>
-
+    
+            <AiSuggestionSection title = {bug.title} description={bug.description} />
       {/* Add Answer Section */}
       {user && (
         <Card>
