@@ -267,8 +267,8 @@ export default function ProfilePage() {
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold">Profile</h1>
         {!editing && (
-          <Button onClick={() => setEditing(true)} variant="outline">
-            <Edit3 className="w-4 h-4 mr-2" />
+          <Button onClick={() => setEditing(true)} variant="outline" className='bg-white text-black'>
+            <Edit3 className="w-4 h-4 mr-2 " />
             Edit Profile
           </Button>
         )}

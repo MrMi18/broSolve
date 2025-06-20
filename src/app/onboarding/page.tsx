@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { doc, setDoc, getDoc, serverTimestamp } from 'firebase/firestore'
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage'
-import { db, storage } from '@/lib/firebase'
+import { auth, db, storage } from '@/lib/firebase'
 import { useAuth } from '@/context/AuthContext'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -62,15 +62,33 @@ export default function OnboardingPage() {
   }
 
   // Handle image upload
-  const handleImageUpload = async (file: File): Promise<string> => {
-    if (!user) throw new Error('User not authenticated')
+  const handleImageUpload = async (file: File | null) => {
+    if (!user) throw new Error('User not authenticated');
 
-    const imageRef = ref(storage, `profile-pictures/${user.uid}`)
-    await uploadBytes(imageRef, file)
-    console.log("image uploaded ")
-    return await getDownloadURL(imageRef)
+    const token = await user.getIdToken();
     
-  }
+    if (!token) throw new Error('Failed to get authentication token');
+
+    const formData = new FormData();
+    if(file){
+       formData.append('file', file );
+    }
+    const response = await fetch('/api/upload-image', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+      body: formData,
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Upload failed');
+    }
+
+    const { url } = await response.json();
+    return url;
+  };
 
   // Handle image selection
   const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -98,6 +116,7 @@ export default function OnboardingPage() {
   const handleSubmit = async () => {
     if (!user) {
       toast.error('User not authenticated')
+      router.push("/login") 
       return
     }
 
