@@ -1,6 +1,6 @@
 
 "use client"
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
@@ -25,12 +25,40 @@ import {
 } from 'lucide-react'
 import { useAuth } from '@/context/AuthContext'
 import { signOut } from 'firebase/auth'
-import { auth } from '@/lib/firebase'
+import { auth, db } from '@/lib/firebase'
+import { doc, getDoc } from 'firebase/firestore'
 
 export default function Navbar() {
   const { user } = useAuth()
   const router = useRouter()
   const [isOpen, setIsOpen] = useState(false)
+  const [image, setImage] = useState<File | null>(null)
+  const[Loading,setLoading] = useState(false)
+  const[userName ,setUsername] = useState()
+
+const fetchProfile = async () => {
+    if (!user) return
+    try {
+      setLoading(true)
+      const userDoc = await getDoc(doc(db, 'users', user.uid))
+      
+      
+      if (userDoc.exists()) {
+        const userData = userDoc.data()
+        
+        setImage(userData.profilePic)
+        setUsername(userData.username || '')
+      } 
+    } catch (error) {
+      console.error('Error fetching profile:', error)
+     
+    } finally {
+      setLoading(false)
+    }
+  }
+  useEffect(() =>{
+    fetchProfile();
+  },[user])
 
   const handleLogout = async () => {
     try {
@@ -50,9 +78,9 @@ export default function Navbar() {
   const UserMenu = () => (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" className="relative h-10 w-10 rounded-full">
+        <Button variant="ghost" className="relative h-10 w-10 rounded-full ">
           <Avatar className="h-10 w-10">
-            <AvatarImage src={user?.photoURL || ''} alt={user?.displayName || 'User'} />
+            <AvatarImage src={image || ''} alt={userName|| 'User'} />
             <AvatarFallback className="bg-blue-500 text-white">
               {user?.displayName ? user.displayName.charAt(0).toUpperCase() : 
                user?.email ? user.email.charAt(0).toUpperCase() : 'U'}

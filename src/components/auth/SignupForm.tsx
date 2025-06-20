@@ -40,7 +40,7 @@ export function SignupForm() {
       await createUserWithEmailAndPassword(auth, values.email, values.password)
       
       toast.success("Account created successfully")
-      router.push("/feed")
+      router.push("/onboarding")
       form.reset()
     } catch (error: any) {
       console.error('Signup failed:', error)

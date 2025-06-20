@@ -362,7 +362,9 @@ export default function ProfilePage() {
                     </div>
                   </div>
                   {profile.about && (
+                      
                     <p className="text-gray-700 mt-2">{profile.about}</p>
+                   
                   )}
                 </div>
               )}

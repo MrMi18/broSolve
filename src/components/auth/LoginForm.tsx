@@ -36,7 +36,7 @@ export function LoginForm() {
     try {
       await signInWithEmailAndPassword(auth, values.email, values.password);
       toast.success("Login successful");
-      router.push("/feed");
+      router.push("/bugs");
       form.reset();
     } catch (error: any) {
       console.error('Login failed:', error);
