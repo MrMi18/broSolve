@@ -59,7 +59,7 @@ export default function SubmitBugForm() {
       const response = await axios.post('/api/bugs/new',body ,config)
       toast.success('Bug submitted!')
       form.reset()
-      // router.push('/bugs')
+      router.push('/bugs')
     } catch (error :any) {
       console.error(error)
       toast.error(error?.response?.data?.error||'Submission failed')
