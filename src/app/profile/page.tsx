@@ -1,3 +1,189 @@
+// 'use client'
+
+// import { useEffect, useState } from 'react'
+// import { useRouter } from 'next/navigation'
+// import { doc, getDoc, collection, query, where, getDocs } from 'firebase/firestore'
+// import { db } from '@/lib/firebase'
+// import { useAuth } from '@/context/AuthContext'
+// import ProfileView from './ProfileView'
+// import ProfileEdit from './ProfileEdit'
+// import { Skeleton } from '@/components/ui/skeleton'
+// import { Card, CardContent, CardHeader } from '@/components/ui/card'
+// import { toast } from 'sonner'
+
+// export interface UserProfile {
+//   uid: string
+//   username: string
+//   email: string
+//   profilePic?: string
+//   about?: string
+//   techStack: string[]
+//   location?: string
+//   totalAnswers: number
+//   totalUpvotes: number
+//   bugsReported: number
+//   joinedAt: any
+// }
+
+// export default function ProfilePage() {
+//   const { user } = useAuth()
+//   const router = useRouter()
+//   const [profile, setProfile] = useState<UserProfile | null>(null)
+//   const [loading, setLoading] = useState(true)
+//   const [editing, setEditing] = useState(false)
+
+//   // Fetch user profile
+//   const fetchProfile = async () => {
+//     if (!user) return
+
+//     try {
+//       setLoading(true)
+//       const userDoc = await getDoc(doc(db, 'users', user.uid))
+      
+//       if (userDoc.exists()) {
+//         const userData = userDoc.data() as UserProfile
+        
+//         // Get updated stats
+//         const stats = await calculateUserStats()
+//         const updatedProfile = { ...userData, ...stats }
+        
+//         setProfile(updatedProfile)
+//       } else {
+//         // No profile exists, redirect to onboarding
+//         toast.success("New to BroSolve let's start with profile setup")
+//         router.push('/onboarding')
+//       }
+//     } catch (error) {
+//       console.error('Error fetching profile:', error)
+//       toast.error('Failed to load profile')
+//     } finally {
+//       setLoading(false)
+//     }
+//   }
+
+//   // Calculate user statistics from Firestore
+//   const calculateUserStats = async (): Promise<{
+//     totalAnswers: number
+//     totalUpvotes: number
+//     bugsReported: number
+//   }> => {
+//     if (!user) return { totalAnswers: 0, totalUpvotes: 0, bugsReported: 0 }
+
+//     try {
+//       // Count bugs reported by user
+//       const bugsQuery = query(
+//         collection(db, 'bugs'),
+//         where('createdBy', '==', user.uid)
+//       )
+//       const bugsSnapshot = await getDocs(bugsQuery)
+//       const bugsReported = bugsSnapshot.size
+
+//       // Count answers by user across all bugs
+//       const bugsAllSnapshot = await getDocs(collection(db, 'bugs'))
+//       let totalAnswers = 0
+//       let totalUpvotes = 0
+        
+//       for (const bugDoc of bugsAllSnapshot.docs) {
+//         const answersQuery = query(
+//           collection(db, 'bugs', bugDoc.id, 'answers'),
+//           where('authorId', '==', user.uid)
+//         )
+//         const answersSnapshot = await getDocs(answersQuery)
+        
+//         totalAnswers += answersSnapshot.size
+        
+//         // Sum up votes for user's answers
+//         answersSnapshot.docs.forEach(answerDoc => {
+//           const votes = answerDoc.data().votes || 0
+//           totalUpvotes += votes
+//         })
+//       }
+       
+//       return { totalAnswers, totalUpvotes, bugsReported }
+//     } catch (error) {
+//       console.error('Error calculating stats:', error)
+//       return { totalAnswers: 0, totalUpvotes: 0, bugsReported: 0 }
+//     }
+//   }
+
+//   useEffect(() => {
+//     if (user) {
+//       fetchProfile()
+//     } else {
+//       router.push('/login')
+//     }
+//   }, [user, router])
+
+//   if (loading) {
+//     return (
+//       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-purple-50/20">
+//         <div className="max-w-6xl mx-auto px-4 py-8 space-y-6">
+//           <div className="flex items-center justify-between">
+//             <Skeleton className="h-10 w-32" />
+//             <Skeleton className="h-10 w-32" />
+//           </div>
+          
+//           <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-md">
+//             <CardHeader>
+//               <div className="flex items-center space-x-6">
+//                 <Skeleton className="h-24 w-24 rounded-full" />
+//                 <div className="space-y-3">
+//                   <Skeleton className="h-8 w-48" />
+//                   <Skeleton className="h-5 w-64" />
+//                   <Skeleton className="h-4 w-40" />
+//                 </div>
+//               </div>
+//             </CardHeader>
+//             <CardContent className="space-y-6">
+//               <div className="space-y-3">
+//                 <Skeleton className="h-6 w-32" />
+//                 <div className="flex flex-wrap gap-2">
+//                   {[1, 2, 3, 4, 5].map(i => (
+//                     <Skeleton key={i} className="h-8 w-20" />
+//                   ))}
+//                 </div>
+//               </div>
+              
+//               <div className="space-y-4">
+//                 <Skeleton className="h-6 w-32" />
+//                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+//                   {[1, 2, 3].map(i => (
+//                     <Skeleton key={i} className="h-24 w-full" />
+//                   ))}
+//                 </div>
+//               </div>
+//             </CardContent>
+//           </Card>
+//         </div>
+//       </div>
+//     )
+//   }
+
+//   if (!profile) return null
+
+//   return (
+//     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-purple-50/20">
+//       <div className="max-w-6xl mx-auto px-4 py-8">
+//         {editing ? (
+//           <ProfileEdit
+//             profile={profile}
+//             setProfile={setProfile}
+//             setEditing={setEditing}
+//             onStatsUpdate={calculateUserStats}
+//           />
+//         ) : (
+//           <ProfileView
+//             profile={profile}
+//             setEditing={setEditing}
+//           />
+//         )}
+//       </div>
+//     </div>
+//   )
+// }
+
+
+
 'use client'
 
 import { useEffect, useState } from 'react'
@@ -121,7 +307,7 @@ export default function ProfilePage() {
       const bugsAllSnapshot = await getDocs(collection(db, 'bugs'))
       let totalAnswers = 0
       let totalUpvotes = 0
-
+        
       for (const bugDoc of bugsAllSnapshot.docs) {
         const answersQuery = query(
           collection(db, 'bugs', bugDoc.id, 'answers'),
@@ -137,7 +323,7 @@ export default function ProfilePage() {
           totalUpvotes += votes
         })
       }
-
+       
       return { totalAnswers, totalUpvotes, bugsReported }
     } catch (error) {
       console.error('Error calculating stats:', error)
@@ -157,7 +343,7 @@ export default function ProfilePage() {
   // Save profile changes
   const handleSaveProfile = async () => {
     if (!user || !profile) return
-
+  
     try {
       setSaving(true)
       
@@ -345,7 +531,7 @@ export default function ProfilePage() {
               ) : (
                 <div className="space-y-2">
                   <h2 className="text-2xl font-bold">{profile.username}</h2>
-                  <div className="flex items-center space-x-4 text-gray-600">
+                  <div className="flex items-center space-x-4 text-gray-600 flex-wrap ">
                     <div className="flex items-center space-x-1">
                       <Mail className="w-4 h-4" />
                       <span>{profile.email}</span>
@@ -462,6 +648,8 @@ export default function ProfilePage() {
                   setEditing(false)
                   setSelectedImage(null)
                   // Reset form values
+                  setSaving(false)
+                  setUploadingImage(false)
                   setEditUsername(profile.username || '')
                   setEditAbout(profile.about || '')
                   setEditTechStack(profile.techStack || [])

@@ -34,7 +34,7 @@ export function SearchAndFilters({
       <div className="flex flex-wrap gap-2">
         <Badge
           variant={selectedTag === '' ? 'default' : 'outline'}
-          className="cursor-pointer text-white"
+          className="cursor-pointer "
           onClick={() => setSelectedTag('')}
         >
           All
@@ -43,7 +43,7 @@ export function SearchAndFilters({
           <Badge
             key={tag}
             variant={selectedTag === tag ? 'default' : 'outline'}
-            className="cursor-pointer  text-white"
+            className="cursor-pointer  "
             onClick={() => setSelectedTag(tag)}
           >
             {tag}
