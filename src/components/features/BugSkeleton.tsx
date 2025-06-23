@@ -4,12 +4,12 @@ import { Card, CardContent, CardHeader } from '../ui/card'
 
 export default function BugSkeleton() {
      return (
-      <div className="max-w-4xl mx-auto p-6 space-y-6">
+      <div className="max-w-4xl mx-auto p-6 space-y-6 w-full">
         <div className="flex flex-col space-y-4">
           <Skeleton className="h-10 w-full" />
           <div className="flex space-x-2">
             {[1, 2, 3, 4].map(i => (
-              <Skeleton key={i} className="h-8 w-20" />
+              <Skeleton key={i} className="h- w-20" />
             ))}
           </div>
         </div>

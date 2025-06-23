@@ -71,7 +71,7 @@ const AboutPage: React.FC = () => {
 
   const roadmapItems: RoadmapItem[] = [
     { title: "Google Auth", status: "planned" },
-    { title: "Forgot Password", status: "planned" },
+    { title: "Badges/Achievements", status: "planned" },
     { title: "BroSolve 2.0 with better AI", status: "development" },
     { title: "Problem clustering", status: "development" },
     { title: "Debug sessions & issue tracking", status: "future" }

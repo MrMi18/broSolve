@@ -61,8 +61,8 @@ const LoginPage: React.FC = () => {
     setIsLoading(true);
     try {
       await signInWithEmailAndPassword(auth, values.email, values.password);
-      toast.success("Login successful");
       router.push("/bugs");
+      toast.success("Login successful");
       form.reset();
     } catch (error: any) {
       console.error('Login failed:', error);
