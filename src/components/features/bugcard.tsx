@@ -1,9 +1,15 @@
+
+"use client"
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { MessageCircle, ThumbsUp, Clock, User } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
 import { useRouter } from 'next/navigation'
 import VoteButton from './VoteButton'
+import { collection, doc, getDoc, getDocs, orderBy, query, where } from 'firebase/firestore'
+import { useEffect, useState } from 'react'
+import { db } from '@/lib/firebase'
+import { id } from 'zod/v4/locales'
 
 interface BugCardProps {
   bug: {
@@ -18,9 +24,24 @@ interface BugCardProps {
     answerCount?: number
   }
 }
+interface UserProfile {
+  uid: string
+  username: string
+  email: string
+  profilePic?: string
+  about?: string
+  techStack: string[]
+  location?: string
+  totalAnswers: number
+  totalUpvotes: number
+  bugsReported: number
+  joinedAt: any
+}
 
 export function BugCard({ bug }: BugCardProps) {
   const router = useRouter();
+  const [answerSize,setAnswerSize]  = useState(0);
+  const [submitedBy,setSubmittedBy]  = useState();
   
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -31,7 +52,26 @@ export function BugCard({ bug }: BugCardProps) {
       default: return 'bg-gray-100 text-gray-800 border border-gray-200 hover:bg-gray-200'
     }
   }
+  const fetchAnswers = async () => {
+    const answersQuery = query(
+      collection(db, 'bugs', bug.id, 'answers'),
+    )
+    const querySnapshot = await getDocs(answersQuery)
+    setAnswerSize(querySnapshot.docs.length || 0)
 
+
+     const userDetails = await getDoc(doc(db, 'users', bug.createdBy));
+    if (userDetails.exists()) {
+        const userData = userDetails.data() 
+        setSubmittedBy(userData.username || userData.email)
+     
+    }
+    
+
+  }
+  useEffect(()=>{
+    fetchAnswers();
+  })
   const formatTime = (timestamp: any) => {
     if (!timestamp) return 'Just now'
     const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp)
@@ -85,7 +125,7 @@ export function BugCard({ bug }: BugCardProps) {
               <div className="w-8 h-8 bg-gradient-to-r from-blue-100 to-purple-100 rounded-full flex items-center justify-center">
                 <User className="w-4 h-4 text-blue-600" />
               </div>
-              <span className="font-medium">{bug.createdBy}</span>
+              <span className="font-medium">{submitedBy || bug.createdBy}</span>
             </div>
             
             <div className="flex items-center space-x-2 text-sm text-gray-500">
@@ -105,10 +145,10 @@ export function BugCard({ bug }: BugCardProps) {
               />
             </div>
             
-            <div className="flex items-center space-x-2 text-sm text-gray-500 bg-gray-50 rounded-lg px-3 py-2 hover:bg-gray-100 transition-colors duration-200">
+            <div className="flex items-center space-x-2 text-sm text-green-600 hover:bg-green-100 rounded-lg px-3 py-2 bg-gray-100 transition-colors duration-200">
               <MessageCircle className="w-4 h-4" />
-              <span className="font-medium">{bug.answerCount || 0}</span>
-              <span className="text-xs">{(bug.answerCount || 0) === 1 ? 'answer' : 'answers'}</span>
+              <span className="font-medium">{answerSize}</span>
+              <span className="text-xs">{answerSize === 1 ? 'answer' : 'answers'}</span>
             </div>
           </div>
         </div>

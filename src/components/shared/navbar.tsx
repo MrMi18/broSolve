@@ -21,7 +21,8 @@ import {
   User, 
   LogOut, 
   Settings,
-  Home
+  Home,
+  Info
 } from 'lucide-react'
 import { useAuth } from '@/context/AuthContext'
 import { signOut } from 'firebase/auth'
@@ -71,7 +72,8 @@ export default function Navbar() {
   const navigationItems = [
     { href: '/', label: 'Home', icon: Home },
     { href: '/bugs', label: 'Feed', icon: Bug },
-    { href: '/bugs/submit', label: 'Submit Bug', icon: PlusCircle }
+    { href: '/bugs/submit', label: 'Submit Bug', icon: PlusCircle },
+    { href: '/about', label: 'About Us', icon: Info }
   ]
 
   const UserMenu = () => (

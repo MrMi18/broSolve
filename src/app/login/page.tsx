@@ -206,7 +206,8 @@ const LoginPage: React.FC = () => {
 
               {/* Forgot Password Link */}
               <div className="text-right">
-                <button className="text-sm text-blue-600 hover:text-blue-700 font-medium transition-colors duration-300">
+                <button onClick={()=> toast.info(<> Feature coming soon! Please <a href="mailto:imran.mohd1910@gmail.com" className="underline text-blue-600">contact the owner</a> or create a new account.
+                </>)} className="text-sm text-blue-600 hover:text-blue-700 font-medium transition-colors duration-300">
                   Forgot your password?
                 </button>
               </div>

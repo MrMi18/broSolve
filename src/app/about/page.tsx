@@ -189,7 +189,7 @@ const AboutPage: React.FC = () => {
       </div>
 
       {/* Creator Section */}
-    2  <div className="max-w-6xl mx-auto px-4 py-8">
+      <div className="max-w-6xl mx-auto px-4 py-8">
         <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg p-8 mb-12">
           <h2 className="text-2xl font-bold text-gray-900 mb-8 text-center">Who Built It</h2>
           <div className="flex flex-col md:flex-row items-center justify-center space-y-6 md:space-y-0 md:space-x-8">

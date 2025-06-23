@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useEffect, useState } from 'react'
+import React, { use, useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { doc, getDoc, collection, addDoc, query, orderBy, getDocs, serverTimestamp, updateDoc, deleteDoc } from 'firebase/firestore'
 import { db } from '@/lib/firebase'
@@ -52,7 +52,7 @@ export default function BugDetailPage({params}: {params: Promise<{ id: string }>
   
   const router = useRouter()
   const { user } = useAuth()
-  console.log(user?.email)
+  
   const {id} = React.use(params)
   const [bug, setBug] = useState<Bug | null>(null)
   const [answers, setAnswers] = useState<Answer[]>([])
@@ -60,7 +60,8 @@ export default function BugDetailPage({params}: {params: Promise<{ id: string }>
   const [answersLoading, setAnswersLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
   const [newAnswer, setNewAnswer] = useState('')
-  
+  const [bugBy,setBugBy] = useState()
+  const [answerBy,setAnswerBy] = useState();
   // Edit states
   const [editingBug, setEditingBug] = useState(false)
   const [editBugTitle, setEditBugTitle] = useState('')
@@ -88,6 +89,7 @@ export default function BugDetailPage({params}: {params: Promise<{ id: string }>
         setEditBugTitle(bugData.title)
         setEditBugDescription(bugData.description)
         setEditBugTags(bugData.tags.join(', '))
+        userDetails(bugData.createdBy,'bug')
       } else {
         toast.error('Bug not found')
         router.push('/bugs')
@@ -137,11 +139,12 @@ export default function BugDetailPage({params}: {params: Promise<{ id: string }>
 
     try {
       setSubmitting(true)
-      
+      const userName = await userDetails(user.uid,'answer');
+     
       await addDoc(collection(db, 'bugs', id, 'answers'), {
         content: newAnswer.trim(),
         authorId: user.uid,
-        authorName: user.displayName || user.email || 'Anonymous',
+        authorName: userName || user.email || 'Anonymous',
         createdAt: serverTimestamp(),
         votes: 0,
         isAccepted: false
@@ -303,8 +306,21 @@ export default function BugDetailPage({params}: {params: Promise<{ id: string }>
     if (id) {
       fetchBug()
       fetchAnswers()
+      
     }
   }, [id])
+
+  const userDetails = async(id:string,action:string) =>{
+      const userData = await getDoc(doc(db, 'users', id));
+      if (userData.exists()) {
+        const data = userData.data() 
+        if(action==="bug"){
+          setBugBy(data.username || data.email)
+        }
+        else return data.username || data.email;
+      }
+    }
+    
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -464,7 +480,7 @@ export default function BugDetailPage({params}: {params: Promise<{ id: string }>
               <div className="flex items-center space-x-6">
                 <div className="flex items-center space-x-2">
                   <User className="w-5 h-5 text-blue-500" />
-                  <span className="font-medium">{bug.createdBy}</span>
+                  <span className="font-medium">{bugBy||bug.createdBy}</span>
                 </div>
                 <div className="flex items-center space-x-2">
                   <Clock className="w-5 h-5 text-purple-500" />
@@ -588,6 +604,7 @@ export default function BugDetailPage({params}: {params: Promise<{ id: string }>
             ) : (
               <div className="space-y-8">
                 {answers.map((answer, index) => (
+                  
                   <div key={answer.id}>
                     <div className="space-y-4">
                       {/* Answer Header */}

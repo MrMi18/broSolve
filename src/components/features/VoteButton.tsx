@@ -25,6 +25,7 @@ export default function VoteButton({
   className
 }: VoteButtonProps) {
   const { user } = useAuth()
+ 
   const [votes, setVotes] = useState(initialVotes)
   const [userVote, setUserVote] = useState<'up' | 'down' | null>(null)
   const [isLoading, setIsLoading] = useState(false)
@@ -155,7 +156,7 @@ export default function VoteButton({
           }}
           disabled={isLoading || !user}
           className={cn(
-            "h-8 px-3 py-1 hover:bg-red-100 hover:text-red-600 transition-colors",
+            "h-8 px-3 py-1 hover:bg-red-100 hover:text-red-600 transition-colors text-red-500",
             userVote === 'up' && "bg-red-100 text-red-600"
           )}
         >
@@ -180,7 +181,7 @@ export default function VoteButton({
         onClick={() => handleVote('up')}
         disabled={isLoading || !user}
         className={cn(
-          "h-8 w-8 p-0 hover:bg-green-100 hover:text-green-600",
+          "h-8 w-8 p-0 hover:bg-green-100 hover:text-green-600 text-green-600",
           userVote === 'up' && "bg-green-100 text-green-600"
         )}
       >
@@ -188,7 +189,7 @@ export default function VoteButton({
       </Button>
       
       <span className={cn(
-        "text-sm font-medium tabular-nums min-w-[2rem] text-center",
+        "text-sm font-medium tabular-nums min-w-[2rem] text-center text-gray-400",
         votes > 0 && "text-green-600",
         votes < 0 && "text-red-600"
       )}>
@@ -201,7 +202,7 @@ export default function VoteButton({
         onClick={() => handleVote('down')}
         disabled={isLoading || !user}
         className={cn(
-          "h-8 w-8 p-0 hover:bg-red-100 hover:text-red-600",
+          "h-8 w-8 p-0 hover:bg-red-100 hover:text-red-600 text-red-600",
           userVote === 'down' && "bg-red-100 text-red-600"
         )}
       >
