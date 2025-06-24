@@ -24,7 +24,7 @@ interface BugCardProps {
 }
 
 
-export function BugCard({ bug }: BugCardProps) {
+export default function BugCard({ bug }: BugCardProps) {
   const router = useRouter();
   const [answerSize,setAnswerSize]  = useState(0);
   const [submitedBy,setSubmittedBy]  = useState();
