@@ -111,31 +111,3 @@ export function LoginForm() {
   )
 }
 
-// try {
-//         const body = { email: values.email, password:values.password}
-//         const config = {
-//            headers: {
-//               'Content-Type': 'application/json'
-//            }
-//         }
-        
-//       const userData  = await axios.post("/api/auth/login", body ,config );  
-//       console.log(userData)
-      
-//       setIsLoading(false);
-//       toast.success("Account created successfully");
-//       router.push("/feed")
-//       reset();
-      
-      
-      
-//     } catch (error:any) {
-//       setErrorMessage(error.response.data.error)
-//       setIsLoading(false);
-//       console.error('Login failed:', error)
-//     }
-//   }
-//   if(errorMessage) {
-//     toast.error(errorMessage);
-//     setErrorMessage(null);
-//   }

@@ -44,7 +44,7 @@ const AiSuggestionSection = (bug: Bug) => {
       setAiExpanded(true)
       
     } catch (error) {
-      console.log("inside a catch") 
+      
       console.error('Error fetching AI suggestion:', error)
       setAiError('Failed to get AI suggestion. Please try again.')
     } finally {

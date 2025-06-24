@@ -3,7 +3,7 @@ import ModelClient, { isUnexpected } from "@azure-rest/ai-inference";
 import { AzureKeyCredential } from "@azure/core-auth";
 import { NextResponse } from 'next/server';
 
-const token = process.env.NEXT_PUBLIC_GITHUB_TOKEN;
+const token = process.env.GITHUB_TOKEN;
 const endpoint = "https://models.github.ai/inference";
 const model = "openai/gpt-4.1";
 
@@ -78,7 +78,7 @@ Keep it concise, clear, and beginner-friendly if possible.`;
 // import { NextResponse } from 'next/server';
 
 // const openai = new OpenAI({
-//   apiKey: process.env.NEXT_PUBLIC_OPENAI_API_KEY,
+//   apiKey: process.env.OPENAI_API_KEY,
 // });
 
 // export  const POST = async(req: Request) => {

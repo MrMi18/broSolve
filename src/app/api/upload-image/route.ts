@@ -1,3 +1,4 @@
+// api/upload-image/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import cloudinary from '@/lib/cloudinary';
 import { adminAuth } from '@/lib/firebase-admin'; // Use your existing admin setup

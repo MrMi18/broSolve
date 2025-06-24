@@ -72,7 +72,6 @@ export default function SubmitBugForm() {
 
   useEffect(() => {
     if (!user && !loading) router.push('/login')
-      else console.log(user)
   }, [user,loading, router])
 
   return (
