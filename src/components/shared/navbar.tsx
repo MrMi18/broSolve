@@ -1,25 +1,24 @@
-
 "use client"
-import React, { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { 
-  DropdownMenu, 
-  DropdownMenuContent, 
-  DropdownMenuItem, 
-  DropdownMenuSeparator, 
-  DropdownMenuTrigger 
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu'
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet'
-import { 
-  Menu, 
-  Code2, 
-  Bug, 
-  PlusCircle, 
-  User, 
-  LogOut, 
+import {
+  Menu,
+  Code2,
+  Bug,
+  PlusCircle,
+  User,
+  LogOut,
   Settings,
   Home,
   Info
@@ -33,32 +32,37 @@ export default function Navbar() {
   const { user } = useAuth()
   const router = useRouter()
   const [isOpen, setIsOpen] = useState(false)
-  const [image, setImage] = useState<File | null>(null)
-  const [Loading, setLoading] = useState(false)
-  const [userName, setUsername] = useState()
+  const [profileImage, setProfileImage] = useState<string>('') // Fixed: Changed from File to string
+  const [userName, setUserName] = useState<string>('') // Fixed: Added proper state update
 
-  const fetchProfile = async () => {
+  const fetchProfile = useCallback(async () => {
     if (!user) return
+    
     try {
-      setLoading(true)
       const userDoc = await getDoc(doc(db, 'users', user.uid))
       
       if (userDoc.exists()) {
         const userData = userDoc.data()
         
-        setImage(userData.profilePic)
-        setUsername(userData.username || '')
-      } 
+        // Fixed: Properly handle the profile image and username
+        setProfileImage(userData.profilePic || '')
+        setUserName(userData.username || user.displayName || '')
+      } else {
+        // Handle case where user document doesn't exist
+        setUserName(user.displayName || '')
+        setProfileImage('')
+      }
     } catch (error) {
       console.error('Error fetching profile:', error)
-    } finally {
-      setLoading(false)
+      // Set fallback values on error
+      setUserName(user.displayName || '')
+      setProfileImage('')
     }
-  }
+  }, [user])
 
   useEffect(() => {
-    fetchProfile();
-  }, [user])
+    fetchProfile()
+  }, [fetchProfile]) // Fixed: Added fetchProfile to dependencies
 
   const handleLogout = async () => {
     try {
@@ -76,6 +80,19 @@ export default function Navbar() {
     { href: '/about', label: 'About Us', icon: Info }
   ]
 
+  // Helper function to get user initials
+  const getUserInitials = () => {
+    if (userName) return userName.charAt(0).toUpperCase()
+    if (user?.displayName) return user.displayName.charAt(0).toUpperCase()
+    if (user?.email) return user.email.charAt(0).toUpperCase()
+    return 'U'
+  }
+
+  // Helper function to get display name
+  const getDisplayName = () => {
+    return userName || user?.displayName || 'Anonymous'
+  }
+
   const UserMenu = () => (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -84,10 +101,9 @@ export default function Navbar() {
           className="relative h-10 w-10 rounded-full hover:scale-105 transition-all duration-300 hover:shadow-md"
         >
           <Avatar className="h-10 w-10 ring-2 ring-transparent hover:ring-blue-200 transition-all duration-300">
-            <AvatarImage src={image || ''} alt={userName || 'User'} />
+            <AvatarImage src={profileImage} alt={getDisplayName()} />
             <AvatarFallback className="bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold">
-              {user?.displayName ? user.displayName.charAt(0).toUpperCase() : 
-               user?.email ? user.email.charAt(0).toUpperCase() : 'U'}
+              {getUserInitials()}
             </AvatarFallback>
           </Avatar>
         </Button>
@@ -99,14 +115,13 @@ export default function Navbar() {
       >
         <div className="flex items-center justify-start gap-3 p-3 rounded-lg bg-gradient-to-br from-slate-50 via-blue-50/30 to-purple-50/20">
           <Avatar className="h-10 w-10">
-            <AvatarImage src={image || ''} alt={userName || 'User'} />
+            <AvatarImage src={profileImage} alt={getDisplayName()} />
             <AvatarFallback className="bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold">
-              {user?.displayName ? user.displayName.charAt(0).toUpperCase() : 
-               user?.email ? user.email.charAt(0).toUpperCase() : 'U'}
+              {getUserInitials()}
             </AvatarFallback>
           </Avatar>
           <div className="flex flex-col space-y-1 leading-none">
-            <p className="font-semibold text-gray-900">{userName || 'Anonymous'}</p>
+            <p className="font-semibold text-gray-900">{getDisplayName()}</p>
             <p className="w-[180px] truncate text-sm text-gray-500">
               {user?.email}
             </p>
@@ -193,14 +208,13 @@ export default function Navbar() {
             <div className="mt-auto pt-6 border-t border-white/50">
               <div className="flex items-center space-x-3 mb-4 p-3 rounded-xl bg-white/60 backdrop-blur-sm">
                 <Avatar className="h-10 w-10">
-                  <AvatarImage src={image || ''} alt={userName || 'User'} />
+                  <AvatarImage src={profileImage} alt={getDisplayName()} />
                   <AvatarFallback className="bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold text-sm">
-                    {user?.displayName ? user.displayName.charAt(0).toUpperCase() : 
-                     user?.email ? user.email.charAt(0).toUpperCase() : 'U'}
+                    {getUserInitials()}
                   </AvatarFallback>
                 </Avatar>
                 <div>
-                  <p className="text-sm font-semibold text-gray-900">{userName || 'Anonymous'}</p>
+                  <p className="text-sm font-semibold text-gray-900">{getDisplayName()}</p>
                   <p className="text-xs text-gray-500 truncate">{user?.email}</p>
                 </div>
               </div>

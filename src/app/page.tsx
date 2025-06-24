@@ -2,7 +2,6 @@
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import Navbar from "@/components/shared/navbar"
 
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
@@ -17,12 +16,7 @@ import {
   MessageSquare,
   TrendingUp,
   Sparkles,
-  Github,
-  Coffee,
-  Heart,
-  Shield,
-  Clock,
-  Award
+  Shield
 } from "lucide-react"
 
 export default function Home() {
@@ -283,7 +277,7 @@ export default function Home() {
             <CardContent className="space-y-6">
               <h2 className="text-3xl md:text-4xl font-bold">Ready to Squash Some Bugs?</h2>
               <p className="text-xl text-blue-100 max-w-2xl mx-auto">
-                Join thousands of developers who've already solved their toughest coding challenges with BroSolve
+                Join thousands of developers who&apos;ve already solved their toughest coding challenges with BroSolve
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center items-center pt-4">
                 <Button 

@@ -23,7 +23,6 @@ const formSchema = z.object({
 
 export function SignupForm() {
   const [isLoading , setIsLoading] = useState(false);
-  const [errorMessage,setErrorMessage] = useState(null)
   const router = useRouter();
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -36,23 +35,21 @@ export function SignupForm() {
   async function onSubmit(values: z.infer<typeof formSchema>) {   
     setIsLoading(true);
   try {
-     
       await createUserWithEmailAndPassword(auth, values.email, values.password)
-      
       toast.success("Account created successfully")
       router.push("/onboarding")
       form.reset()
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Signup failed:', error)
-      
-      
       let errorMessage = 'Signup failed. Please try again.'
-      if (error.code === 'auth/email-already-in-use') {
-        errorMessage = 'Email already in use'
-      } else if (error.code === 'auth/weak-password') {
-        errorMessage = 'Password should be at least 6 characters'
+      if (typeof error === 'object' && error !== null && 'code' in error) {
+        const errorObj = error as { code: string };
+        if (errorObj.code === 'auth/email-already-in-use') {
+          errorMessage = 'Email already in use'
+        } else if (errorObj.code === 'auth/weak-password') {
+          errorMessage = 'Password should be at least 6 characters'
+        }
       }
-      
       toast.error(errorMessage)
     } finally {
       setIsLoading(false)

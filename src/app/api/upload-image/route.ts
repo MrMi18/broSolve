@@ -1,8 +1,10 @@
 // api/upload-image/route.ts
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import cloudinary from '@/lib/cloudinary';
 import { adminAuth } from '@/lib/firebase-admin'; // Use your existing admin setup
-
+// interface FormData {
+//   file : File
+// }
 export async function POST(request:Request) {
   try {
     // Get the authorization token
@@ -16,12 +18,12 @@ export async function POST(request:Request) {
     const decodedToken = await adminAuth.verifyIdToken(token);
     const userId = decodedToken.uid;
 
-    const formData = await request.formData();
-     const file: File | null = formData.get('file') as unknown as File;
+    const formData :FormData  = await request.formData();
+     const file  = formData.get('file') as unknown as File;
     
     if (!file) {
       return NextResponse.json({ error: 'No file uploaded' }, { status: 400 });
-    }
+    } 
 
     // Convert file to base64
     const bytes = await file.arrayBuffer();
@@ -46,11 +48,8 @@ export async function POST(request:Request) {
       publicId: result.public_id
     });
 
-  } catch (error:any) {
-    console.error('Upload error:', error);
-    return NextResponse.json({ 
-      error: 'Upload failed',
-      details: error.message 
-    }, { status: 500 });
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : 'Upload failed';
+    return NextResponse.json({ error: errorMessage }, { status: 500 });
   }
 }

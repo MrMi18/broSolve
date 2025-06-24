@@ -58,13 +58,17 @@ export default function SubmitBugForm() {
               'Authorization': `Bearer ${userToken}` 
            }
         }
-      const response = await axios.post('/api/bugs/new',body ,config)
+      await axios.post('/api/bugs/new',body ,config)
       toast.success('Bug submitted!')
       form.reset()
       router.push('/bugs')
-    } catch (error :any) {
+    } catch (error: unknown) {
       console.error(error)
-      toast.error(error?.response?.data?.error||'Submission failed')
+      if (axios.isAxiosError(error) && error.response?.data?.error) {
+        toast.error(error.response.data.error)
+      } else {
+        toast.error('Submission failed')
+      }
     } finally {
       setIsLoading(false)
     }

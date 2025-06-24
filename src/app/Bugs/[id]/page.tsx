@@ -1,8 +1,8 @@
 'use client'
 
-import React, { use, useEffect, useState } from 'react'
-import { useParams, useRouter } from 'next/navigation'
-import { doc, getDoc, collection, addDoc, query, orderBy, getDocs, serverTimestamp, updateDoc, deleteDoc } from 'firebase/firestore'
+import React, { useCallback, useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
+import { doc, getDoc, collection, addDoc, query, orderBy, getDocs, serverTimestamp, updateDoc, deleteDoc, Timestamp } from 'firebase/firestore'
 import { db } from '@/lib/firebase'
 import { useAuth } from '@/context/AuthContext'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -12,7 +12,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Input } from '@/components/ui/input'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Separator } from '@/components/ui/separator'
-import { ArrowLeft, User, Clock, MessageCircle, ThumbsUp, Send, ThumbsDown, Edit, Trash2, X, Check, CheckCircle } from 'lucide-react'
+import { ArrowLeft, User, Clock, MessageCircle, Send, Edit, Trash2, X, Check, CheckCircle } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
 import { toast } from 'sonner'
 import VoteButton from '@/components/features/VoteButton'
@@ -28,7 +28,7 @@ interface Bug {
   status: 'open' | 'answered' | 'solved' | 'closed'
   createdBy: string
   createdByUserId?: string
-  createdAt: any
+  createdAt: Timestamp
   votes?: number
 }
 
@@ -37,7 +37,7 @@ interface Answer {
   content: string
   authorId: string
   authorName?: string
-  createdAt: any
+  createdAt: Timestamp
   votes?: number
   isAccepted?: boolean
 }
@@ -60,8 +60,7 @@ export default function BugDetailPage({params}: {params: Promise<{ id: string }>
   const [answersLoading, setAnswersLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
   const [newAnswer, setNewAnswer] = useState('')
-  const [bugBy,setBugBy] = useState()
-  const [answerBy,setAnswerBy] = useState();
+  const [bugBy,setBugBy] = useState<string | undefined>()
   // Edit states
   const [editingBug, setEditingBug] = useState(false)
   const [editBugTitle, setEditBugTitle] = useState('')
@@ -73,7 +72,7 @@ export default function BugDetailPage({params}: {params: Promise<{ id: string }>
   const [deleting, setDeleting] = useState<string | null>(null)
 
   // Fetch bug details
-  const fetchBug = async () => {
+  const fetchBug = useCallback(async () => {
     try {
       setLoading(true)
       const bugDoc = await getDoc(doc(db, 'bugs', id))
@@ -100,10 +99,10 @@ export default function BugDetailPage({params}: {params: Promise<{ id: string }>
     } finally {
       setLoading(false)
     }
-  }
+  }, [id,router])
 
   // Fetch answers for this bug
-  const fetchAnswers = async () => {
+  const fetchAnswers = useCallback(async () => {
     try {
       setAnswersLoading(true)
       const answersQuery = query(
@@ -123,7 +122,7 @@ export default function BugDetailPage({params}: {params: Promise<{ id: string }>
     } finally {
       setAnswersLoading(false)
     }
-  }
+  }, [id])
 
   // Submit new answer
   const handleSubmitAnswer = async () => {
@@ -308,7 +307,7 @@ export default function BugDetailPage({params}: {params: Promise<{ id: string }>
       fetchAnswers()
       
     }
-  }, [id])
+  }, [id, fetchBug, fetchAnswers])
 
   const userDetails = async(id:string,action:string) =>{
       const userData = await getDoc(doc(db, 'users', id));
@@ -332,9 +331,9 @@ export default function BugDetailPage({params}: {params: Promise<{ id: string }>
     }
   }
 
-  const formatTime = (timestamp: any) => {
+  const formatTime = (timestamp: Timestamp) => {
     if (!timestamp) return 'Just now'
-    const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp)
+    const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp as unknown as Date)
     return formatDistanceToNow(date, { addSuffix: true })
   }
 

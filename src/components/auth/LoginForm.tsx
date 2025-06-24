@@ -38,23 +38,26 @@ export function LoginForm() {
       toast.success("Login successful");
       router.push("/bugs");
       form.reset();
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Login failed:', error);
 
       let errorMessage = 'Login failed. Please try again.';
-      switch (error.code) {
-        case 'auth/user-not-found':
-          errorMessage = 'No account found with this email';
-          break;
-        case 'auth/invalid-credential':
-          errorMessage = 'Invalid email or password';
-          break;
-        case 'auth/wrong-password':
-          errorMessage = 'Incorrect password';
-          break;
-        case 'auth/too-many-requests':
-          errorMessage = 'Account temporarily locked due to many failed attempts';
-          break;
+      if (typeof error === 'object' && error !== null && 'code' in error) {
+        const errorObj = error as { code: string };
+        switch (errorObj.code) {
+          case 'auth/user-not-found':
+            errorMessage = 'No account found with this email';
+            break;
+          case 'auth/invalid-credential':
+            errorMessage = 'Invalid email or password';
+            break;
+          case 'auth/wrong-password':
+            errorMessage = 'Incorrect password';
+            break;
+          case 'auth/too-many-requests':
+            errorMessage = 'Account temporarily locked due to many failed attempts';
+            break;
+        }
       }
 
       toast.error(errorMessage);
@@ -102,7 +105,7 @@ export function LoginForm() {
           Login
         </Button>
        <div className='text-center'>
-        <small className='text-sm loading-none font-medium '>Don't have an account? <Link className='text-amber-100' href={"/signup"}>Create Account</Link></small>
+        <small className='text-sm loading-none font-medium '><span>Don&apos;t have an account?</span> <Link className='text-amber-100' href={"/signup"}>Create Account</Link></small>
        </div>
       </form>
    

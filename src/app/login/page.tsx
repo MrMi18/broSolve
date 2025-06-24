@@ -64,23 +64,31 @@ const LoginPage: React.FC = () => {
       router.push("/bugs");
       toast.success("Login successful");
       form.reset();
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Login failed:', error);
-
       let errorMessage = 'Login failed. Please try again.';
-      switch (error.code) {
-        case 'auth/user-not-found':
-          errorMessage = 'No account found with this email';
-          break;
-        case 'auth/invalid-credential':
-          errorMessage = 'Invalid email or password';
-          break;
-        case 'auth/wrong-password':
-          errorMessage = 'Incorrect password';
-          break;
-        case 'auth/too-many-requests':
-          errorMessage = 'Account temporarily locked due to many failed attempts';
-          break;
+      // Type narrowing for Firebase errors
+      if (error instanceof Error) {
+        errorMessage = error.message;
+
+        // Type guard for Firebase auth errors
+        if (typeof error === 'object' && error !== null && 'code' in error) {
+          const firebaseError = error as { code: string };
+          switch (firebaseError.code) {
+            case 'auth/user-not-found':
+              errorMessage = 'No account found with this email';
+              break;
+            case 'auth/invalid-credential':
+              errorMessage = 'Invalid email or password';
+              break;
+            case 'auth/wrong-password':
+              errorMessage = 'Incorrect password';
+              break;
+            case 'auth/too-many-requests':
+              errorMessage = 'Account temporarily locked due to many failed attempts';
+              break;
+          }
+        }
       }
 
       toast.error(errorMessage);

@@ -1,8 +1,7 @@
-
 'use client'
 
 import { useState } from 'react'
-import { doc, updateDoc } from 'firebase/firestore'
+import { doc, Timestamp, updateDoc } from 'firebase/firestore'
 import { db } from '@/lib/firebase'
 import { useAuth } from '@/context/AuthContext'
 import { Badge } from '@/components/ui/badge'
@@ -34,7 +33,7 @@ interface UserProfile {
   totalAnswers: number
   totalUpvotes: number
   bugsReported: number
-  joinedAt: any
+  joinedAt: Timestamp
 }
 
 interface EditProfileModalProps {
@@ -69,6 +68,7 @@ export default function EditProfileModal({ profile, onClose, onSave }: EditProfi
     if (!user) throw new Error('User not authenticated')
 
     const formData = new FormData()
+
     formData.append('file', file)
 
     const response = await fetch('/api/upload-image', {
@@ -309,7 +309,7 @@ export default function EditProfileModal({ profile, onClose, onSave }: EditProfi
                 />
                 <div className="flex justify-between text-xs">
                   <span className="text-gray-500">
-                    Share your interests, experience, or what you're passionate about
+                    Share your interests, experience, or what you&apos;re passionate about
                   </span>
                   <span className={`${editAbout.length > 150 ? 'text-red-500' : 'text-gray-500'}`}>
                     {editAbout.length}/160

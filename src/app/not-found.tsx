@@ -103,10 +103,11 @@ const ErrorPage = () => {
                   Oops! Page Not Found
                 </h1>
                 <p className="text-lg text-slate-600 mb-2">
-                  The page you're looking for doesn't exist or has been moved.
+                  
+                  The page you&apos;re looking for doesn&apos;t exist or has been moved.
                 </p>
                 <p className="text-sm text-slate-500">
-                  Don't worry, even the best developers encounter 404s! 🚀
+                  Don&apos;t worry, even the best developers encounter 404s! 🚀
                 </p>
               </div>
 

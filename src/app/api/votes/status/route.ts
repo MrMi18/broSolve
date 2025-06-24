@@ -41,7 +41,7 @@ export async function GET(request: Request) {
 
       return NextResponse.json({ userVote })
 
-    } catch (authError) {
+    } catch {
       // If token is invalid, return null vote
       return NextResponse.json(
         { userVote: null },

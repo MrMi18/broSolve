@@ -1,14 +1,14 @@
 'use client';
 
 import React from 'react';
-import { 
-  Search, 
-  MessageSquare, 
-  Bot, 
-  Zap, 
-  Github, 
-  Linkedin, 
-  Mail, 
+import {
+  Search,
+  MessageSquare,
+  Bot,
+  Zap,
+  Github,
+  Linkedin,
+  Mail,
   ExternalLink,
   Code,
   Database,

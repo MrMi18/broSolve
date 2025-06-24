@@ -7,11 +7,17 @@ const token = process.env.GITHUB_TOKEN;
 const endpoint = "https://models.github.ai/inference";
 const model = "openai/gpt-4.1";
 
+interface Data  {
+  title: string;
+  description: string;
+  tags: string[];
+}
 export const POST = async (req: Request) => {
   console.log("GitHub AI model request");
     
   try {
-    const { title, description, tags } = await req.json();
+     const data : Data = await req.json()
+     const { title, description, tags } = data
 
     if (!token) {
       return NextResponse.json({ error: "GitHub token not configured" }, { status: 500 });
@@ -64,9 +70,9 @@ Keep it concise, clear, and beginner-friendly if possible.`;
     
     return NextResponse.json({ suggestion });
 
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error("Error in AI suggestion:", err);
-    return NextResponse.json({ error: err.message || "Internal server error" }, { status: 500 });
+    return NextResponse.json({ error: err instanceof Error ? err.message : "Internal server error" }, { status: 500 });
   }
 };
 

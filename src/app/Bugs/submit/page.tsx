@@ -1,4 +1,3 @@
-
 'use client'
 import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
@@ -71,13 +70,13 @@ const Submit: React.FC = () => {
           'Authorization': `Bearer ${userToken}`
         }
       };
-      const response = await axios.post('/api/bugs/new', body, config);
+      await axios.post('/api/bugs/new', body, config);
       toast.success('Bug submitted!');
       form.reset();
       router.push('/bugs');
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error(error);
-      toast.error(error?.response?.data?.error || 'Submission failed');
+      toast.error((error as { response?: { data?: { error?: string } } })?.response?.data?.error || 'Submission failed');
     } finally {
       setIsLoading(false);
     }

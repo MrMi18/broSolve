@@ -1,10 +1,8 @@
-// your responce profile page
-
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
-import { doc, getDoc, collection, query, where, getDocs } from 'firebase/firestore'
+import { doc, getDoc, collection, query, where, getDocs, Timestamp } from 'firebase/firestore'
 import { db } from '@/lib/firebase'
 import { useAuth } from '@/context/AuthContext'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
@@ -31,7 +29,6 @@ import { toast } from 'sonner'
 import { formatDistanceToNow } from 'date-fns'
 import EditProfileModal from '@/components/features/EditProfileModal'
 
-
 interface UserProfile {
   uid: string
   username: string
@@ -43,8 +40,18 @@ interface UserProfile {
   totalAnswers: number
   totalUpvotes: number
   bugsReported: number
-  joinedAt: any
+  joinedAt: Timestamp  
 }
+
+interface UserStats {
+  totalAnswers: number
+  totalUpvotes: number
+  bugsReported: number
+}
+
+// Cache for profile data
+const profileCache = new Map<string, { profile: UserProfile; timestamp: number }>()
+const CACHE_DURATION = 5 * 60 * 1000 // 5 minutes
 
 export default function ProfilePage() {
   const { user } = useAuth()
@@ -52,48 +59,36 @@ export default function ProfilePage() {
   const [profile, setProfile] = useState<UserProfile | null>(null)
   const [loading, setLoading] = useState(true)
   const [showEditModal, setShowEditModal] = useState(false)
+  const [statsLoading, setStatsLoading] = useState(false)
+  
+  // Use ref to prevent unnecessary re-renders
+  const hasInitialized = useRef(false)
+  const statsCalculated = useRef(false)
 
-  // Fetch user profile
-  const fetchProfile = async () => {
-    if (!user) return
-
-    try {
-      setLoading(true)
-      const userDoc = await getDoc(doc(db, 'users', user.uid))
-      
-      if (userDoc.exists()) {
-        const userData = userDoc.data() as UserProfile
-        
-        // Calculate fresh stats
-        const stats = await calculateUserStats()
-        const updatedProfile = { ...userData, ...stats }
-        
-        setProfile(updatedProfile)
-      } else {
-        toast.success("New to BroSolve? Let's set up your profile!")
-        router.push('/onboarding')
-      }
-    } catch (error) {
-      console.error('Error fetching profile:', error)
-      toast.error('Failed to load profile')
-    } finally {
-      setLoading(false)
+  // Check if we have cached profile data
+  const getCachedProfile = useCallback((userId: string): UserProfile | null => {
+    const cached = profileCache.get(userId)
+    if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
+      return cached.profile
     }
-  }
+    return null
+  }, [])
 
-  // Calculate user statistics from Firestore
-  const calculateUserStats = async (): Promise<{
-    totalAnswers: number
-    totalUpvotes: number
-    bugsReported: number
-  }> => {
-    if (!user) return { totalAnswers: 0, totalUpvotes: 0, bugsReported: 0 }
+  // Cache profile data
+  const setCachedProfile = useCallback((userId: string, profile: UserProfile) => {
+    profileCache.set(userId, {
+      profile,
+      timestamp: Date.now()
+    })
+  }, [])
 
+  // Calculate user statistics from Firestore (expensive operation)
+  const calculateUserStats = useCallback(async (userId: string): Promise<UserStats> => {
     try {
       // Count bugs reported by user
       const bugsQuery = query(
         collection(db, 'bugs'),
-        where('createdBy', '==', user.uid)
+        where('createdBy', '==', userId)
       )
       const bugsSnapshot = await getDocs(bugsQuery)
       const bugsReported = bugsSnapshot.size
@@ -106,7 +101,7 @@ export default function ProfilePage() {
       for (const bugDoc of bugsAllSnapshot.docs) {
         const answersQuery = query(
           collection(db, 'bugs', bugDoc.id, 'answers'),
-          where('authorId', '==', user.uid)
+          where('authorId', '==', userId)
         )
         const answersSnapshot = await getDocs(answersQuery)
         
@@ -124,20 +119,113 @@ export default function ProfilePage() {
       console.error('Error calculating stats:', error)
       return { totalAnswers: 0, totalUpvotes: 0, bugsReported: 0 }
     }
-  }
+  }, [])
 
-  const handleProfileUpdate = (updatedProfile: UserProfile) => {
+  // Fetch user profile (optimized with caching)
+  const fetchProfile = useCallback(async (userId: string, forceRefresh = false) => {
+    try {
+      setLoading(true)
+
+      // Check cache first (unless force refresh)
+      if (!forceRefresh) {
+        const cachedProfile = getCachedProfile(userId)
+        if (cachedProfile) {
+          setProfile(cachedProfile)
+          setLoading(false)
+          return
+        }
+      }
+
+      // Fetch from Firestore
+      const userDoc = await getDoc(doc(db, 'users', userId))
+      
+      if (userDoc.exists()) {
+        const userData = userDoc.data() as Omit<UserProfile, 'totalAnswers' | 'totalUpvotes' | 'bugsReported'>
+        
+        // Create profile with default stats first
+        const profileWithDefaults: UserProfile = {
+          ...userData,
+          totalAnswers: 0,
+          totalUpvotes: 0,
+          bugsReported: 0
+        }
+        
+        setProfile(profileWithDefaults)
+        setCachedProfile(userId, profileWithDefaults)
+        
+        // Calculate stats in background if not already done
+        if (!statsCalculated.current) {
+          setStatsLoading(true)
+          statsCalculated.current = true
+          
+          const stats = await calculateUserStats(userId)
+          const updatedProfile = { ...profileWithDefaults, ...stats }
+          
+          setProfile(updatedProfile)
+          setCachedProfile(userId, updatedProfile)
+          setStatsLoading(false)
+        }
+      } else {
+        toast.success("New to BroSolve? Let's set up your profile!")
+        router.push('/onboarding')
+      }
+    } catch (error) {
+      console.error('Error fetching profile:', error)
+      toast.error('Failed to load profile')
+    } finally {
+      setLoading(false)
+    }
+  }, [getCachedProfile, setCachedProfile, calculateUserStats, router])
+
+  // Handle profile updates
+  const handleProfileUpdate = useCallback((updatedProfile: UserProfile) => {
     setProfile(updatedProfile)
     setShowEditModal(false)
-  }
-
-  useEffect(() => {
+    
+    // Update cache
     if (user) {
-      fetchProfile()
-    } else {
-      router.push('/login')
+      setCachedProfile(user.uid, updatedProfile)
     }
-  }, [user, router])
+  }, [user, setCachedProfile])
+
+  // Force refresh stats (for manual refresh)
+  const refreshStats = useCallback(async () => {
+    if (!user || !profile) return
+    
+    setStatsLoading(true)
+    try {
+      const stats = await calculateUserStats(user.uid)
+      const updatedProfile = { ...profile, ...stats }
+      
+      setProfile(updatedProfile)
+      setCachedProfile(user.uid, updatedProfile)
+    } catch (error) {
+      console.error('Error refreshing stats:', error)
+      toast.error('Failed to refresh statistics')
+    } finally {
+      setStatsLoading(false)
+    }
+  }, [user, profile, calculateUserStats, setCachedProfile])
+
+  // Main effect - only runs when user changes or component mounts
+  useEffect(() => {
+    if (!user) {
+      router.push('/login')
+      return
+    }
+
+    // Prevent multiple initializations
+    if (hasInitialized.current) return
+    hasInitialized.current = true
+
+    fetchProfile(user.uid)
+  }, [user, router, fetchProfile])
+
+  // Reset initialization flag when user changes
+  useEffect(() => {
+    hasInitialized.current = false
+    statsCalculated.current = false
+  }, [user?.uid])
 
   if (loading) {
     return (
@@ -200,13 +288,23 @@ export default function ProfilePage() {
             </h1>
             <p className="text-gray-600 mt-2">Manage your BroSolve community presence</p>
           </div>
-          <Button 
-            onClick={() => setShowEditModal(true)} 
-            className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-6 py-3 rounded-xl font-semibold transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-xl"
-          >
-            <Edit3 className="w-5 h-5 mr-2" />
-            Edit Profile
-          </Button>
+          <div className="flex gap-3">
+            <Button 
+              onClick={refreshStats}
+              disabled={statsLoading}
+              variant="outline"
+              className="px-4 py-2 rounded-xl font-semibold transition-all duration-300"
+            >
+              {statsLoading ? 'Refreshing...' : 'Refresh Stats'}
+            </Button>
+            <Button 
+              onClick={() => setShowEditModal(true)} 
+              className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-6 py-3 rounded-xl font-semibold transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-xl"
+            >
+              <Edit3 className="w-5 h-5 mr-2" />
+              Edit Profile
+            </Button>
+          </div>
         </div>
 
         {/* Main Profile Card */}
@@ -237,6 +335,11 @@ export default function ProfilePage() {
                       <Star className="w-4 h-4 mr-1" />
                       {reputation.level}
                     </Badge>
+                    {statsLoading && (
+                      <Badge className="bg-blue-100 text-blue-600 border-0 px-3 py-1 font-semibold animate-pulse">
+                        Updating stats...
+                      </Badge>
+                    )}
                   </div>
                   
                   <div className="flex flex-wrap items-center gap-4 text-gray-600">
@@ -308,7 +411,7 @@ export default function ProfilePage() {
               </div>
               
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="group relative overflow-hidden bg-gradient-to-br from-blue-50 to-blue-100 p-6 rounded-2xl border border-blue-200 hover:shadow-lg transition-all duration-300 hover:scale-105">
+                <div className={`group relative overflow-hidden bg-gradient-to-br from-blue-50 to-blue-100 p-6 rounded-2xl border border-blue-200 hover:shadow-lg transition-all duration-300 hover:scale-105 ${statsLoading ? 'animate-pulse' : ''}`}>
                   <div className="absolute top-0 right-0 w-20 h-20 bg-blue-200 rounded-full -mr-10 -mt-10 opacity-20"></div>
                   <div className="relative">
                     <div className="flex items-center justify-between mb-3">
@@ -322,7 +425,7 @@ export default function ProfilePage() {
                   </div>
                 </div>
                 
-                <div className="group relative overflow-hidden bg-gradient-to-br from-green-50 to-green-100 p-6 rounded-2xl border border-green-200 hover:shadow-lg transition-all duration-300 hover:scale-105">
+                <div className={`group relative overflow-hidden bg-gradient-to-br from-green-50 to-green-100 p-6 rounded-2xl border border-green-200 hover:shadow-lg transition-all duration-300 hover:scale-105 ${statsLoading ? 'animate-pulse' : ''}`}>
                   <div className="absolute top-0 right-0 w-20 h-20 bg-green-200 rounded-full -mr-10 -mt-10 opacity-20"></div>
                   <div className="relative">
                     <div className="flex items-center justify-between mb-3">
@@ -336,7 +439,7 @@ export default function ProfilePage() {
                   </div>
                 </div>
                 
-                <div className="group relative overflow-hidden bg-gradient-to-br from-red-50 to-red-100 p-6 rounded-2xl border border-red-200 hover:shadow-lg transition-all duration-300 hover:scale-105">
+                <div className={`group relative overflow-hidden bg-gradient-to-br from-red-50 to-red-100 p-6 rounded-2xl border border-red-200 hover:shadow-lg transition-all duration-300 hover:scale-105 ${statsLoading ? 'animate-pulse' : ''}`}>
                   <div className="absolute top-0 right-0 w-20 h-20 bg-red-200 rounded-full -mr-10 -mt-10 opacity-20"></div>
                   <div className="relative">
                     <div className="flex items-center justify-between mb-3">
@@ -370,7 +473,6 @@ export default function ProfilePage() {
         </Card>
       </div>
 
-    
       {showEditModal && (
         <EditProfileModal
           profile={profile}
@@ -381,4 +483,3 @@ export default function ProfilePage() {
     </div>
   )
 }
-

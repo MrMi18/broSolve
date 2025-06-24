@@ -1,15 +1,13 @@
-
 "use client"
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { MessageCircle, ThumbsUp, Clock, User } from 'lucide-react'
+import { MessageCircle, Clock, User } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
 import { useRouter } from 'next/navigation'
 import VoteButton from './VoteButton'
-import { collection, doc, getDoc, getDocs, orderBy, query, where } from 'firebase/firestore'
-import { useEffect, useState } from 'react'
+import { collection, doc, getDoc, getDocs, query, Timestamp } from 'firebase/firestore'
+import { useCallback, useEffect, useState } from 'react'
 import { db } from '@/lib/firebase'
-import { id } from 'zod/v4/locales'
 
 interface BugCardProps {
   bug: {
@@ -19,24 +17,12 @@ interface BugCardProps {
     tags: string[]
     status: 'open' | 'answered' | 'solved' | 'closed'
     createdBy: string
-    createdAt: any
+    createdAt: Timestamp
     votes?: number
     answerCount?: number
   }
 }
-interface UserProfile {
-  uid: string
-  username: string
-  email: string
-  profilePic?: string
-  about?: string
-  techStack: string[]
-  location?: string
-  totalAnswers: number
-  totalUpvotes: number
-  bugsReported: number
-  joinedAt: any
-}
+
 
 export function BugCard({ bug }: BugCardProps) {
   const router = useRouter();
@@ -52,7 +38,7 @@ export function BugCard({ bug }: BugCardProps) {
       default: return 'bg-gray-100 text-gray-800 border border-gray-200 hover:bg-gray-200'
     }
   }
-  const fetchAnswers = async () => {
+  const fetchAnswers = useCallback(async () => {
     const answersQuery = query(
       collection(db, 'bugs', bug.id, 'answers'),
     )
@@ -68,15 +54,27 @@ export function BugCard({ bug }: BugCardProps) {
     }
     
 
-  }
+  }, [bug.id])
   useEffect(()=>{
     fetchAnswers();
-  })
-  const formatTime = (timestamp: any) => {
-    if (!timestamp) return 'Just now'
-    const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp)
-    return formatDistanceToNow(date, { addSuffix: true })
-  }
+  }, [bug.id,fetchAnswers])
+  const formatTime = (
+    timestamp: Timestamp | Date | string | number | null | undefined
+  ) => {
+    if (!timestamp) return 'Just now';
+    let date: Date;
+    if (
+      typeof timestamp === 'object' &&
+      timestamp !== null &&
+      'toDate' in timestamp &&
+      typeof (timestamp as Timestamp).toDate === 'function'
+    ) {
+      date = (timestamp as Timestamp).toDate();
+    } else {
+      date = new Date(timestamp as string | number | Date);
+    }
+    return formatDistanceToNow(date, { addSuffix: true });
+  };
 
   return (
     <Card 

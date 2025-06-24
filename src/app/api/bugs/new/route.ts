@@ -2,6 +2,12 @@ import { adminAuth } from '@/lib/firebase-admin'
 import { getFirestore } from 'firebase-admin/firestore' // Add this import
 import { NextResponse } from 'next/server'
 
+interface Data  {
+  title: string;
+  description: string;
+  tags: string;
+} 
+
 export async function POST(request: Request) {
   try {
     const authHeader = request.headers.get('Authorization')
@@ -17,7 +23,9 @@ export async function POST(request: Request) {
     const decodedToken = await adminAuth.verifyIdToken(token)
     const userId = decodedToken.uid
 
-    const { title, description, tags } = await request.json()
+     const data : Data = await request.json()
+     const { title, description, tags } = data
+
 
     if (!title || !description || !tags) {
       return NextResponse.json(
@@ -49,9 +57,9 @@ export async function POST(request: Request) {
       { status: 201 }
     )
     
-  } catch (error:any) {
+  } catch (error: unknown) {
       console.error("Submission error:", error)
-      if (error.code === 'auth/id-token-expired') {
+      if (typeof error === 'object' && error !== null && 'code' in error && (error as { code?: string }).code === 'auth/id-token-expired') {
           return NextResponse.json(
               { error: "Session expired. Please log in again." },
               { status: 401 }

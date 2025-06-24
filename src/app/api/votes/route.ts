@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { adminAuth } from '@/lib/firebase-admin'
-import { getFirestore, FieldValue } from 'firebase-admin/firestore'
+import { getFirestore } from 'firebase-admin/firestore'
 
 const adminDb = getFirestore()
 

@@ -1,7 +1,7 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { ChevronUp, ChevronDown, ThumbsUp, ThumbsDown, Heart } from 'lucide-react'
+import { useState, useEffect, useCallback } from 'react'
+import { ThumbsUp, ThumbsDown, Heart } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useAuth } from '@/context/AuthContext'
 import { toast } from 'sonner'
@@ -15,6 +15,12 @@ interface VoteButtonProps {
   onVoteUpdate: (newCount: number) => void
   className?: string
 }
+type VoteRequestBody = {
+  targetId: string;
+  targetType: 'bug' | 'answer';
+  voteType: 'up' | 'down' | null;
+  parentId?: string;
+};
 
 export default function VoteButton({    
   targetId,
@@ -30,35 +36,31 @@ export default function VoteButton({
   const [userVote, setUserVote] = useState<'up' | 'down' | null>(null)
   const [isLoading, setIsLoading] = useState(false)
 
+  const fetchUserVote = useCallback(async () => {
+    try {
+      const token = await user?.getIdToken();
+      const headers: HeadersInit = {};
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+      const response = await fetch(`/api/votes/status?targetId=${targetId}&targetType=${targetType}`, {
+        headers
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setUserVote(data.userVote);
+      }
+    } catch (error) {
+      console.error('Error fetching vote status:', error);
+    }
+  }, [user, targetId, targetType]);
+
   // Fetch user's current vote status
   useEffect(() => {
     if (user) {
-      fetchUserVote()
+      fetchUserVote();
     }
-  }, [user, targetId])
-
-  const fetchUserVote = async () => {
-    try {
-      // Get auth token
-      const token = await user?.getIdToken()
-      const headers: HeadersInit = {}
-      
-      if (token) {
-        headers['Authorization'] = `Bearer ${token}`
-      }
-
-      const response = await fetch(`/api/votes/status?targetId=${targetId}&targetType=${targetType}`, {
-        headers
-      })
-      
-      if (response.ok) {
-        const data = await response.json()
-        setUserVote(data.userVote)
-      }
-    } catch (error) {
-      console.error('Error fetching vote status:', error)
-    }
-  }
+  }, [user, targetId, fetchUserVote ])
 
   const handleVote = async (voteType: 'up' | 'down') => {
     if (!user) {
@@ -98,15 +100,14 @@ export default function VoteButton({
       // Get auth token
       const token = await user?.getIdToken()
       
-      const requestBody: any = {
+      const requestBody: VoteRequestBody = {
         targetId,
         targetType,
         voteType: newUserVote, // null means remove vote
-      }
-
+      };
       // Add parentId for answer votes
       if (targetType === 'answer' && parentId) {
-        requestBody.parentId = parentId
+        requestBody.parentId = parentId;
       }
 
       const response = await fetch('/api/votes', {
@@ -130,7 +131,7 @@ export default function VoteButton({
       // Call the parent's vote update handler
       onVoteUpdate(result.newVoteCount)
       
-    } catch (error) {
+    } catch (error:unknown) {
       // Revert optimistic update on error
       setUserVote(previousVote)
       setVotes(previousVotes)

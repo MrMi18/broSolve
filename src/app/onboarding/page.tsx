@@ -2,9 +2,8 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { doc, setDoc, getDoc, serverTimestamp } from 'firebase/firestore'
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage'
-import { auth, db, storage } from '@/lib/firebase'
+import { doc, setDoc, serverTimestamp } from 'firebase/firestore'
+import { db } from '@/lib/firebase'
 import { useAuth } from '@/context/AuthContext'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -12,11 +11,11 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { 
-  User, 
-  Camera, 
-  Code, 
-  MapPin, 
+import {
+  User,
+  Camera,
+  Code,
+  MapPin,
   ArrowRight,
   CheckCircle
 } from 'lucide-react'
@@ -45,21 +44,6 @@ export default function OnboardingPage() {
   const [location, setLocation] = useState('')
   const [selectedImage, setSelectedImage] = useState<File | null>(null)
   const [previewUrl, setPreviewUrl] = useState<string>('')
-
-  // Check if username is available
-  const checkUsernameAvailability = async (username: string): Promise<boolean> => {
-    if (!username.trim()) return false
-    
-    try {
-      const userDoc = await getDoc(doc(db, 'users', user?.uid || ''))
-      // For simplicity, we'll just check basic validation
-      // In production, you might want to maintain a separate collection for usernames
-      return username.length >= 3 && username.length <= 20
-    } catch (error) {   
-      console.error('Error checking username:', error)
-      return false
-    }
-  }
 
   // Handle image upload
   const handleImageUpload = async (file: File | null) => {
@@ -194,7 +178,7 @@ export default function OnboardingPage() {
             Welcome to BroSolve! 🚀
           </h1>
           <p className="text-gray-600">
-            Let's set up your profile to get you started
+            Let&apos;s set up your profile to get you started
           </p>
         </div>
 
@@ -380,7 +364,7 @@ export default function OnboardingPage() {
                     placeholder="City, State (e.g., San Francisco, CA)"
                   />
                   <p className="text-xs text-gray-500 mt-1">
-                    Help others know where you're based
+                    Help others know where you&apos;re based
                   </p>
                 </div>
 

@@ -1,4 +1,3 @@
-
 'use client'
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
@@ -9,7 +8,7 @@ import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 import { toast } from 'sonner';
 import Link from 'next/link';
-import { Mail, Lock, Eye, EyeOff, Loader2, UserPlus, ArrowLeft, Shield, Users, Code2, CheckCircle, Star, Zap } from 'lucide-react';
+import { Mail, Lock, Eye, EyeOff, Loader2, UserPlus, ArrowLeft, Code2, CheckCircle, Star, Zap } from 'lucide-react';
 
 const formSchema = z.object({
   email: z.string().email('Invalid email').min(1, 'Email is required'),
@@ -67,21 +66,27 @@ const SignupPage: React.FC = () => {
       toast.success("Account created successfully");
       router.push("/onboarding");
       form.reset();
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Signup failed:', error);
-      
       let errorMessage = 'Signup failed. Please try again.';
-      if (error.code === 'auth/email-already-in-use') {
-        errorMessage = 'Email already in use';
-      } else if (error.code === 'auth/weak-password') {
-        errorMessage = 'Password should be at least 6 characters';
+      if (error instanceof Error) {
+        errorMessage = error.message;
+
+        // Type guard for Firebase auth errors
+        if (typeof error === 'object' && error !== null && 'code' in error) {
+          const errorObj = error as { code: string };
+          if (errorObj.code === 'auth/email-already-in-use') {
+            errorMessage = 'Email already in use';
+          } else if (errorObj.code === 'auth/weak-password') {
+            errorMessage = 'Password should be at least 6 characters';
+          }
+        }
       }
-      
-      toast.error(errorMessage);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+        toast.error(errorMessage);
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
   const { register, handleSubmit, formState: { errors }, watch } = form;
   const password = watch('password', '');
