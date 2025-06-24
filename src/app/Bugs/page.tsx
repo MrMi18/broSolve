@@ -6,11 +6,13 @@ import { db } from '@/lib/firebase'
 import { Button } from '@/components/ui/button'
 import { MessageCircle, Plus, TrendingUp, Users, Bug } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
-import BugSkeleton from '@/components/features/BugSkeleton'
+
 import { SearchAndFilters } from '@/components/features/SearchAndFilters'
 import { BugCard } from '@/components/features/BugCard'
 import Link from 'next/link'
 import { toast } from 'sonner'
+import BugSkeleton from '@/components/features/BugSkeleton'
+
 
 interface Bug {
   id: string
